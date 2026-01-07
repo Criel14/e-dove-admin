@@ -5,5 +5,14 @@ defineOptions({
 </script>
 
 <template>
-  <h1>Pure-Admin-Thin（非国际化版本）</h1>
+  <h1>e-dove 管理端</h1>
 </template>
+
+<style scoped>
+h1 {
+  margin-top: 100px;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+}
+</style>
