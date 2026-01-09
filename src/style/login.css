@@ -41,6 +41,7 @@
 .avatar {
   width: 350px;
   height: 80px;
+  object-fit: contain;
 }
 
 .login-form h2 {
@@ -74,6 +75,7 @@
   .avatar {
     width: 280px;
     height: 80px;
+    object-fit: contain;
   }
 }
 
