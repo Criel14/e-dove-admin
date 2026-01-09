@@ -73,7 +73,7 @@ class PureHttp {
         }
         /** 请求白名单，放置一些不需要`token`的接口（通过设置请求白名单，防止`token`过期后再请求造成的死循环问题） */
         const whiteList = [
-          "/refresh-token",
+          "/auth/refresh",
           "/login",
           "/auth/sign-in",
           "/auth/otp"
@@ -82,35 +82,10 @@ class PureHttp {
           ? config
           : new Promise(resolve => {
               const data = getToken();
-              if (data) {
-                const now = new Date().getTime();
-                const expired = parseInt(data.expires) - now <= 0;
-                if (expired) {
-                  if (!PureHttp.isRefreshing) {
-                    PureHttp.isRefreshing = true;
-                    // token过期刷新
-                    useUserStoreHook()
-                      .handRefreshToken({ refreshToken: data.refreshToken })
-                      .then(res => {
-                        const token = res.data.accessToken;
-                        config.headers["Authorization"] = formatToken(token);
-                        PureHttp.requests.forEach(cb => cb(token));
-                        PureHttp.requests = [];
-                      })
-                      .finally(() => {
-                        PureHttp.isRefreshing = false;
-                      });
-                  }
-                  resolve(PureHttp.retryOriginalRequest(config));
-                } else {
-                  config.headers["Authorization"] = formatToken(
-                    data.accessToken
-                  );
-                  resolve(config);
-                }
-              } else {
-                resolve(config);
+              if (data && data.accessToken) {
+                config.headers["Authorization"] = formatToken(data.accessToken);
               }
+              resolve(config);
             });
       },
       error => {
@@ -136,10 +111,70 @@ class PureHttp {
         }
         return response.data;
       },
-      (error: PureHttpError) => {
+      async (error: PureHttpError) => {
         const $error = error;
         $error.isCancelRequest = Axios.isCancel($error);
-        // 所有的响应异常 区分来源为取消请求/非取消请求
+
+        // 处理401未授权错误（token过期）
+        if ($error.response?.status === 401) {
+          const originalRequest = $error.config;
+          const url = originalRequest?.url || "";
+
+          // 排除刷新token接口本身，避免死循环
+          if (url.endsWith("/auth/refresh")) {
+            // 刷新token也过期，需要重新登录
+            useUserStoreHook().logOut();
+            // 可以跳转到登录页或提示用户重新登录
+            return Promise.reject($error);
+          }
+
+          // 获取当前的refreshToken
+          const tokenData = getToken();
+          if (!tokenData || !tokenData.refreshToken) {
+            // 没有refreshToken，需要重新登录
+            useUserStoreHook().logOut();
+            return Promise.reject($error);
+          }
+
+          // 如果正在刷新中，将当前请求加入队列
+          if (PureHttp.isRefreshing) {
+            return PureHttp.retryOriginalRequest(originalRequest);
+          }
+
+          // 开始刷新token
+          PureHttp.isRefreshing = true;
+
+          try {
+            // 调用刷新token接口
+            const res = await useUserStoreHook().handRefreshToken({
+              refreshToken: tokenData.refreshToken
+            });
+
+            if (res?.status) {
+              const newAccessToken = res.data.accessToken;
+              // 更新请求头中的Authorization
+              originalRequest.headers["Authorization"] =
+                formatToken(newAccessToken);
+              // 执行所有等待的请求
+              PureHttp.requests.forEach(cb => cb(newAccessToken));
+              PureHttp.requests = [];
+              // 重试原始请求
+              return PureHttp.axiosInstance(originalRequest);
+            } else {
+              // 刷新失败，需要重新登录
+              useUserStoreHook().logOut();
+              return Promise.reject($error);
+            }
+          } catch (refreshError) {
+            // 刷新失败，需要重新登录
+            useUserStoreHook().logOut();
+            return Promise.reject(refreshError);
+          } finally {
+            PureHttp.isRefreshing = false;
+          }
+        }
+
+        // 其他的响应异常
         return Promise.reject($error);
       }
     );
