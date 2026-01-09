@@ -15,7 +15,8 @@ import {
   getLogin,
   refreshTokenApi,
   signIn,
-  sendOtp
+  sendOtp,
+  register
 } from "@/api/user";
 import { useMultiTagsStoreHook } from "./multiTags";
 import { type DataInfo, setToken, removeToken, userKey } from "@/utils/auth";
@@ -132,6 +133,48 @@ export const useUserStore = defineStore("pure-user", {
       return new Promise<OtpResponse>((resolve, reject) => {
         sendOtp(data)
           .then(response => {
+            resolve(response);
+          })
+          .catch(error => {
+            reject(error);
+          });
+      });
+    },
+
+    /** 注册 */
+    async register(data: {
+      username?: string;
+      password?: string;
+      phone?: string;
+      email?: string;
+      avatarUrl?: string | null;
+      phoneOtp?: string;
+      emailOtp?: string;
+    }) {
+      return new Promise<SignInResponse>((resolve, reject) => {
+        register(data)
+          .then(response => {
+            if (response?.status) {
+              // 将后端返回的用户信息转换为token存储格式
+              const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24小时后过期
+              const tokenData = {
+                accessToken: response.data.accessToken,
+                refreshToken: response.data.refreshToken,
+                expires: expires,
+                // 用户信息字段
+                username: response.data.username,
+                avatar: "", // 后端未返回头像，留空
+                nickname: "", // 后端未返回昵称，留空
+                roles: response.data.roleNames || [],
+                permissions: response.data.permissionCodes || []
+              };
+              setToken(tokenData);
+
+              // 更新store中的用户信息
+              this.SET_USERNAME(response.data.username);
+              this.SET_ROLES(response.data.roleNames || []);
+              this.SET_PERMS(response.data.permissionCodes || []);
+            }
             resolve(response);
           })
           .catch(error => {

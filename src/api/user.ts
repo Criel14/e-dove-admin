@@ -97,3 +97,26 @@ export const getLogin = (data?: object) => {
 export const refreshTokenApi = (data?: object) => {
   return http.request<RefreshTokenResult>("post", "/refresh-token", { data });
 };
+
+/** 注册接口 */
+export const register = (data?: {
+  username?: string;
+  password?: string;
+  phone?: string;
+  email?: string;
+  avatarUrl?: string | null;
+  phoneOtp?: string;
+  emailOtp?: string;
+}) => {
+  // 注意：后端接口地址是 "/auth/register"
+  // 参数说明：
+  // - username: 用户名（可选）
+  // - password: 密码（可选）
+  // - phone: 手机号（必填）
+  // - email: 邮箱（可选）
+  // - avatarUrl: 头像地址（可选，TODO: 暂时固定为null）
+  // - phoneOtp: 手机验证码（必填）
+  // - emailOtp: 邮箱验证码（可选）
+  // 响应数据与登录接口相同（注册成功后自动登录）
+  return http.request<SignInResponse>("post", "/auth/register", { data });
+};
