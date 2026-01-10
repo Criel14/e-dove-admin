@@ -25,23 +25,11 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       host: "0.0.0.0",
       // 本地跨域代理 https://cn.vitejs.dev/config/server-options.html#server-proxy
       proxy: {
-        // 代理 /auth 开头的请求到后端服务器（解决登录接口跨域问题）
-        "/auth": {
-          target: "http://localhost:8100",
-          changeOrigin: true
-          // rewrite: (path) => path.replace(/^\/auth/, '/auth') // 保持路径不变
-        },
-        // 代理 /api 开头的请求到后端服务器（通用API代理）
+        // 代理，前端每个请求都会加上"/api"前缀，然后在这里去掉这个前缀
         "/api": {
           target: "http://localhost:8100",
           changeOrigin: true,
           rewrite: path => path.replace(/^\/api/, "")
-        },
-        // 代理 /store 开头的请求到后端服务器（门店管理接口）
-        "/store": {
-          target: "http://localhost:8100",
-          changeOrigin: true
-          // rewrite: (path) => path.replace(/^\/store/, '/store') // 保持路径不变
         }
       },
       // 预热文件以提前转换和缓存结果，降低启动期间的初始页面加载时长并防止转换瀑布

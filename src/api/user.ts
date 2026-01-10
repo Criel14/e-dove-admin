@@ -77,7 +77,7 @@ export const signIn = (data?: {
   // - password: 密码（账号密码登录时必填）
   // - phoneOtp: 短信验证码（短信登录时必填）
   // 后端会根据哪些字段为空来判断登录方式
-  return http.request<SignInResponse>("post", "/auth/sign-in", { data });
+  return http.request<SignInResponse>("post", "/api/auth/sign-in", { data });
 };
 
 /** 发送短信验证码 */
@@ -85,7 +85,7 @@ export const sendOtp = (data: { phoneOrEmail: string }) => {
   // 注意：后端接口地址是 "/auth/otp"
   // 参数：phoneOrEmail - 手机号或邮箱（根据后端需求，目前只需要手机号）
   // 响应：没有数据，只有成功状态
-  return http.request<OtpResponse>("post", "/auth/otp", { data });
+  return http.request<OtpResponse>("post", "/api/auth/otp", { data });
 };
 
 /** 原有登录接口（保持兼容，可能用于模拟数据） */
@@ -95,7 +95,9 @@ export const getLogin = (data?: object) => {
 
 /** 刷新`token` */
 export const refreshTokenApi = (data?: object) => {
-  return http.request<RefreshTokenResult>("post", "/auth/refresh", { data });
+  return http.request<RefreshTokenResult>("post", "/api/auth/refresh", {
+    data
+  });
 };
 
 /** 注册接口 */
@@ -118,5 +120,5 @@ export const register = (data?: {
   // - phoneOtp: 手机验证码（必填）
   // - emailOtp: 邮箱验证码（可选）
   // 响应数据与登录接口相同（注册成功后自动登录）
-  return http.request<SignInResponse>("post", "/auth/register", { data });
+  return http.request<SignInResponse>("post", "/api/auth/register", { data });
 };

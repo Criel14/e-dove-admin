@@ -32,5 +32,5 @@ export type StoreInfoResponse = {
 /** 获取当前用户所属门店信息 */
 export const getMyStore = () => {
   // GET "/store/my" 接口，不需要请求参数
-  return http.request<StoreInfoResponse>("get", "/store/my");
+  return http.request<StoreInfoResponse>("get", "/api/store/my");
 };
