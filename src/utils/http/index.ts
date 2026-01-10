@@ -85,6 +85,7 @@ class PureHttp {
               if (data && data.accessToken) {
                 config.headers["Authorization"] = formatToken(data.accessToken);
               }
+              // 即使没有token也继续发送请求，让后端处理认证失败
               resolve(config);
             });
       },
