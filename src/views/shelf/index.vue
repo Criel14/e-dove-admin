@@ -1,9 +1,9 @@
 <script setup lang="ts">
 defineOptions({
-  name: "Welcome"
+  name: "Shelf"
 });
 </script>
 
 <template>
-  <h1>欢迎来到E-DOVE控台</h1>
+  <h1>货架管理</h1>
 </template>
