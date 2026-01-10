@@ -338,13 +338,6 @@ onMounted(() => {
   padding: 20px;
 }
 
-.page-title {
-  margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
-}
-
 .store-info-card {
   max-width: 800px;
   margin: 0 auto;
