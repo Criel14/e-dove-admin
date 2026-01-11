@@ -69,6 +69,38 @@ export type UnbindStoreResponse = {
   message?: string;
 };
 
+/** 创建门店请求参数 */
+export type CreateStoreRequest = {
+  /** 门店ID（可以为null，后端自动生成） */
+  id?: string | null;
+  /** 门店名称 */
+  storeName: string;
+  /** 门店管理员用户ID（可以为null，后端自动指定当前用户） */
+  managerUserId?: string | null;
+  /** 门店管理员手机号（可以为null，后端自动指定当前用户手机号） */
+  managerPhone?: string | null;
+  /** 省份 */
+  addrProvince: string;
+  /** 城市 */
+  addrCity: string;
+  /** 区县 */
+  addrDistrict: string;
+  /** 详细地址 */
+  addrDetail: string;
+  /** 门店状态：1=营业、2=休息、3=注销（可以为null，后端设置默认值） */
+  status?: number | null;
+};
+
+/** 创建门店响应 */
+export type CreateStoreResponse = {
+  status: boolean;
+  message?: string;
+  data?: {
+    /** 创建成功的门店ID */
+    id: string;
+  };
+};
+
 /** 更新门店信息请求参数 */
 export type UpdateStoreRequest = {
   /** 门店ID（不能修改，原封不动传回） */
@@ -136,6 +168,13 @@ export const updateStore = (data: UpdateStoreRequest) => {
 /** 更新门店状态 */
 export const updateStoreStatus = (data: UpdateStoreRequest) => {
   return http.request<UpdateStoreResponse>("patch", "/api/store/status", {
+    data
+  });
+};
+
+/** 创建门店 */
+export const createStore = (data: CreateStoreRequest) => {
+  return http.request<CreateStoreResponse>("post", "/api/store/create", {
     data
   });
 };

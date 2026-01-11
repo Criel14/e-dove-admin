@@ -7,9 +7,11 @@ import {
   unbindStore,
   updateStore,
   updateStoreStatus,
+  createStore,
   type StoreInfo,
   type StoreListItem,
-  type UpdateStoreRequest
+  type UpdateStoreRequest,
+  type CreateStoreRequest
 } from "@/api/store";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
@@ -63,6 +65,17 @@ const editStatusForm = ref<UpdateStoreRequest>({
   status: 1
 });
 const editStatusLoading = ref(false);
+
+// 创建门店相关
+const createDialogVisible = ref(false);
+const createForm = ref<CreateStoreRequest>({
+  storeName: "",
+  addrProvince: "",
+  addrCity: "",
+  addrDistrict: "",
+  addrDetail: ""
+});
+const createLoading = ref(false);
 
 // 状态映射
 const statusMap: Record<number, string> = {
@@ -282,6 +295,47 @@ const handleSaveStoreStatus = async () => {
   }
 };
 
+// 打开创建门店对话框
+const handleOpenCreateDialog = () => {
+  // 重置表单
+  createForm.value = {
+    storeName: "",
+    addrProvince: "",
+    addrCity: "",
+    addrDistrict: "",
+    addrDetail: ""
+  };
+  createDialogVisible.value = true;
+};
+
+// 保存创建的门店
+const handleSaveCreateStore = async () => {
+  if (!createForm.value) return;
+
+  createLoading.value = true;
+  try {
+    const res = await createStore(createForm.value);
+    if (res.status) {
+      message("门店创建成功并已自动绑定", { type: "success" });
+      // 关闭对话框
+      createDialogVisible.value = false;
+      // 重新获取门店信息（会自动绑定并显示）
+      await fetchStoreInfo();
+      // 注意：创建成功后，后端会自动绑定，所以不需要再调用绑定接口
+      // 直接刷新门店信息即可
+    } else {
+      message(res.message || "创建失败", { type: "error" });
+    }
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "创建失败";
+    message(errorMessage, { type: "error" });
+    console.error("创建门店失败:", error);
+  } finally {
+    createLoading.value = false;
+  }
+};
+
 // 处理分页变化
 const handlePageChange = (newPage: number) => {
   pageNum.value = newPage;
@@ -395,6 +449,15 @@ onMounted(() => {
         <template #header>
           <div class="card-header">
             <span class="card-title">选择门店进行绑定</span>
+            <div class="card-actions">
+              <el-button
+                type="success"
+                size="small"
+                @click="handleOpenCreateDialog"
+              >
+                创建门店
+              </el-button>
+            </div>
           </div>
         </template>
 
@@ -595,6 +658,85 @@ onMounted(() => {
             @click="handleSaveStoreStatus"
           >
             保存
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 创建门店对话框 -->
+    <el-dialog
+      v-model="createDialogVisible"
+      title="创建门店"
+      width="600px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+    >
+      <el-form
+        :model="createForm"
+        label-width="120px"
+        :disabled="createLoading"
+      >
+        <el-form-item label="门店名称" required>
+          <el-input
+            v-model="createForm.storeName"
+            placeholder="请输入门店名称"
+            clearable
+          />
+        </el-form-item>
+
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="省份" required>
+              <el-input
+                v-model="createForm.addrProvince"
+                placeholder="请输入省份"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="城市" required>
+              <el-input
+                v-model="createForm.addrCity"
+                placeholder="请输入城市"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="区县" required>
+              <el-input
+                v-model="createForm.addrDistrict"
+                placeholder="请输入区县"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="详细地址" required>
+          <el-input
+            v-model="createForm.addrDetail"
+            placeholder="请输入详细地址"
+            clearable
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button
+            :disabled="createLoading"
+            @click="createDialogVisible = false"
+          >
+            取消
+          </el-button>
+          <el-button
+            type="primary"
+            :loading="createLoading"
+            @click="handleSaveCreateStore"
+          >
+            创建
           </el-button>
         </span>
       </template>
