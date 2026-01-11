@@ -69,6 +69,32 @@ export type UnbindStoreResponse = {
   message?: string;
 };
 
+/** 更新门店信息请求参数 */
+export type UpdateStoreRequest = {
+  /** 门店ID（不能修改，原封不动传回） */
+  id: string;
+  /** 门店名称 */
+  storeName: string;
+  /** 门店管理员用户ID（不能修改，原封不动传回） */
+  managerUserId: string;
+  /** 门店管理员手机号 */
+  managerPhone: string;
+  /** 省份 */
+  addrProvince: string;
+  /** 城市 */
+  addrCity: string;
+  /** 区县 */
+  addrDistrict: string;
+  /** 详细地址 */
+  addrDetail: string;
+};
+
+/** 更新门店信息响应 */
+export type UpdateStoreResponse = {
+  status: boolean;
+  message?: string;
+};
+
 /** 获取当前用户所属门店信息 */
 export const getMyStore = () => {
   // GET "/store/my" 接口，不需要请求参数
@@ -95,5 +121,12 @@ export const bindStore = (storeId: string) => {
 export const unbindStore = (storeId: string) => {
   return http.request<UnbindStoreResponse>("post", "/api/store/unbind", {
     data: { storeId }
+  });
+};
+
+/** 更新门店信息 */
+export const updateStore = (data: UpdateStoreRequest) => {
+  return http.request<UpdateStoreResponse>("patch", "/api/store/update", {
+    data
   });
 };

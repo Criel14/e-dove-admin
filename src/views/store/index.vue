@@ -5,8 +5,10 @@ import {
   getStorePage,
   bindStore,
   unbindStore,
+  updateStore,
   type StoreInfo,
-  type StoreListItem
+  type StoreListItem,
+  type UpdateStoreRequest
 } from "@/api/store";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
@@ -30,6 +32,20 @@ const pageNum = ref(1);
 const pageSize = ref(10);
 const searchStoreName = ref("");
 const listLoading = ref(false);
+
+// 编辑门店相关
+const editDialogVisible = ref(false);
+const editForm = ref<UpdateStoreRequest>({
+  id: "",
+  storeName: "",
+  managerUserId: "",
+  managerPhone: "",
+  addrProvince: "",
+  addrCity: "",
+  addrDistrict: "",
+  addrDetail: ""
+});
+const editLoading = ref(false);
 
 // 状态映射
 const statusMap: Record<number, string> = {
@@ -157,6 +173,51 @@ const handleUnbindStore = async () => {
   }
 };
 
+// 打开编辑门店信息对话框
+const handleOpenEditDialog = () => {
+  if (!storeInfo.value) return;
+
+  // 将当前门店信息填充到编辑表单中
+  editForm.value = {
+    id: storeInfo.value.id,
+    storeName: storeInfo.value.storeName,
+    managerUserId: storeInfo.value.managerUserId,
+    managerPhone: storeInfo.value.managerPhone,
+    addrProvince: storeInfo.value.addrProvince,
+    addrCity: storeInfo.value.addrCity,
+    addrDistrict: storeInfo.value.addrDistrict,
+    addrDetail: storeInfo.value.addrDetail
+  };
+
+  editDialogVisible.value = true;
+};
+
+// 保存门店信息修改
+const handleSaveStoreInfo = async () => {
+  if (!editForm.value) return;
+
+  editLoading.value = true;
+  try {
+    const res = await updateStore(editForm.value);
+    if (res.status) {
+      message("门店信息更新成功", { type: "success" });
+      // 关闭对话框
+      editDialogVisible.value = false;
+      // 重新获取门店信息
+      await fetchStoreInfo();
+    } else {
+      message(res.message || "更新失败", { type: "error" });
+    }
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "更新失败";
+    message(errorMessage, { type: "error" });
+    console.error("更新门店信息失败:", error);
+  } finally {
+    editLoading.value = false;
+  }
+};
+
 // 处理分页变化
 const handlePageChange = (newPage: number) => {
   pageNum.value = newPage;
@@ -197,9 +258,18 @@ onMounted(() => {
         <template #header>
           <div class="card-header">
             <span class="card-title">门店信息</span>
-            <el-button type="danger" size="small" @click="handleUnbindStore">
-              解绑门店
-            </el-button>
+            <div class="card-actions">
+              <el-button
+                type="primary"
+                size="small"
+                @click="handleOpenEditDialog"
+              >
+                修改信息
+              </el-button>
+              <el-button type="danger" size="small" @click="handleUnbindStore">
+                解绑门店
+              </el-button>
+            </div>
           </div>
         </template>
 
@@ -330,6 +400,86 @@ onMounted(() => {
         </div>
       </el-card>
     </div>
+
+    <!-- 编辑门店信息对话框 -->
+    <el-dialog
+      v-model="editDialogVisible"
+      title="修改门店信息"
+      width="600px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+    >
+      <el-form :model="editForm" label-width="120px" :disabled="editLoading">
+        <el-form-item label="门店名称" required>
+          <el-input
+            v-model="editForm.storeName"
+            placeholder="请输入门店名称"
+            clearable
+          />
+        </el-form-item>
+
+        <el-form-item label="管理员手机号" required>
+          <el-input
+            v-model="editForm.managerPhone"
+            placeholder="请输入管理员手机号"
+            clearable
+          />
+        </el-form-item>
+
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="省份" required>
+              <el-input
+                v-model="editForm.addrProvince"
+                placeholder="请输入省份"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="城市" required>
+              <el-input
+                v-model="editForm.addrCity"
+                placeholder="请输入城市"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="区县" required>
+              <el-input
+                v-model="editForm.addrDistrict"
+                placeholder="请输入区县"
+                clearable
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="详细地址" required>
+          <el-input
+            v-model="editForm.addrDetail"
+            placeholder="请输入详细地址"
+            clearable
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button :disabled="editLoading" @click="editDialogVisible = false">
+            取消
+          </el-button>
+          <el-button
+            type="primary"
+            :loading="editLoading"
+            @click="handleSaveStoreInfo"
+          >
+            保存
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -347,6 +497,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
 }
 
 .card-title {
