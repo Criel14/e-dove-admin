@@ -87,6 +87,8 @@ export type UpdateStoreRequest = {
   addrDistrict: string;
   /** 详细地址 */
   addrDetail: string;
+  /** 门店状态：1=营业、2=休息、3=注销 */
+  status: number;
 };
 
 /** 更新门店信息响应 */
@@ -127,6 +129,13 @@ export const unbindStore = (storeId: string) => {
 /** 更新门店信息 */
 export const updateStore = (data: UpdateStoreRequest) => {
   return http.request<UpdateStoreResponse>("patch", "/api/store/update", {
+    data
+  });
+};
+
+/** 更新门店状态 */
+export const updateStoreStatus = (data: UpdateStoreRequest) => {
+  return http.request<UpdateStoreResponse>("patch", "/api/store/status", {
     data
   });
 };

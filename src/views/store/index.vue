@@ -6,6 +6,7 @@ import {
   bindStore,
   unbindStore,
   updateStore,
+  updateStoreStatus,
   type StoreInfo,
   type StoreListItem,
   type UpdateStoreRequest
@@ -43,9 +44,25 @@ const editForm = ref<UpdateStoreRequest>({
   addrProvince: "",
   addrCity: "",
   addrDistrict: "",
-  addrDetail: ""
+  addrDetail: "",
+  status: 1
 });
 const editLoading = ref(false);
+
+// 编辑门店状态相关
+const editStatusDialogVisible = ref(false);
+const editStatusForm = ref<UpdateStoreRequest>({
+  id: "",
+  storeName: "",
+  managerUserId: "",
+  managerPhone: "",
+  addrProvince: "",
+  addrCity: "",
+  addrDistrict: "",
+  addrDetail: "",
+  status: 1
+});
+const editStatusLoading = ref(false);
 
 // 状态映射
 const statusMap: Record<number, string> = {
@@ -186,7 +203,8 @@ const handleOpenEditDialog = () => {
     addrProvince: storeInfo.value.addrProvince,
     addrCity: storeInfo.value.addrCity,
     addrDistrict: storeInfo.value.addrDistrict,
-    addrDetail: storeInfo.value.addrDetail
+    addrDetail: storeInfo.value.addrDetail,
+    status: storeInfo.value.status
   };
 
   editDialogVisible.value = true;
@@ -215,6 +233,52 @@ const handleSaveStoreInfo = async () => {
     console.error("更新门店信息失败:", error);
   } finally {
     editLoading.value = false;
+  }
+};
+
+// 打开编辑门店状态对话框
+const handleOpenEditStatusDialog = () => {
+  if (!storeInfo.value) return;
+
+  // 将当前门店信息填充到状态编辑表单中
+  editStatusForm.value = {
+    id: storeInfo.value.id,
+    storeName: storeInfo.value.storeName,
+    managerUserId: storeInfo.value.managerUserId,
+    managerPhone: storeInfo.value.managerPhone,
+    addrProvince: storeInfo.value.addrProvince,
+    addrCity: storeInfo.value.addrCity,
+    addrDistrict: storeInfo.value.addrDistrict,
+    addrDetail: storeInfo.value.addrDetail,
+    status: storeInfo.value.status
+  };
+
+  editStatusDialogVisible.value = true;
+};
+
+// 保存门店状态修改
+const handleSaveStoreStatus = async () => {
+  if (!editStatusForm.value) return;
+
+  editStatusLoading.value = true;
+  try {
+    const res = await updateStoreStatus(editStatusForm.value);
+    if (res.status) {
+      message("门店状态更新成功", { type: "success" });
+      // 关闭对话框
+      editStatusDialogVisible.value = false;
+      // 重新获取门店信息
+      await fetchStoreInfo();
+    } else {
+      message(res.message || "更新失败", { type: "error" });
+    }
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "更新失败";
+    message(errorMessage, { type: "error" });
+    console.error("更新门店状态失败:", error);
+  } finally {
+    editStatusLoading.value = false;
   }
 };
 
@@ -285,17 +349,27 @@ onMounted(() => {
             {{ storeInfo.managerPhone }}
           </el-descriptions-item>
           <el-descriptions-item label="门店状态">
-            <el-tag
-              :type="
-                storeInfo.status === 1
-                  ? 'success'
-                  : storeInfo.status === 2
-                    ? 'warning'
-                    : 'danger'
-              "
-            >
-              {{ statusMap[storeInfo.status] || "未知" }}
-            </el-tag>
+            <div class="status-container">
+              <el-tag
+                :type="
+                  storeInfo.status === 1
+                    ? 'success'
+                    : storeInfo.status === 2
+                      ? 'warning'
+                      : 'danger'
+                "
+              >
+                {{ statusMap[storeInfo.status] || "未知" }}
+              </el-tag>
+              <el-button
+                type="text"
+                size="small"
+                class="ml-2"
+                @click="handleOpenEditStatusDialog"
+              >
+                修改
+              </el-button>
+            </div>
           </el-descriptions-item>
 
           <el-descriptions-item label="省份">
@@ -474,6 +548,51 @@ onMounted(() => {
             type="primary"
             :loading="editLoading"
             @click="handleSaveStoreInfo"
+          >
+            保存
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 编辑门店状态对话框 -->
+    <el-dialog
+      v-model="editStatusDialogVisible"
+      title="修改门店状态"
+      width="400px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+    >
+      <el-form
+        :model="editStatusForm"
+        label-width="120px"
+        :disabled="editStatusLoading"
+      >
+        <el-form-item label="门店状态" required>
+          <el-select
+            v-model="editStatusForm.status"
+            placeholder="请选择门店状态"
+            class="w-full"
+          >
+            <el-option :label="'营业 (1)'" :value="1" />
+            <el-option :label="'休息 (2)'" :value="2" />
+            <el-option :label="'注销 (3)'" :value="3" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button
+            :disabled="editStatusLoading"
+            @click="editStatusDialogVisible = false"
+          >
+            取消
+          </el-button>
+          <el-button
+            type="primary"
+            :loading="editStatusLoading"
+            @click="handleSaveStoreStatus"
           >
             保存
           </el-button>
