@@ -8,6 +8,7 @@ import {
   updateStore,
   updateStoreStatus,
   createStore,
+  deactivateStore,
   type StoreInfo,
   type StoreListItem,
   type UpdateStoreRequest,
@@ -144,7 +145,13 @@ const handleSearch = () => {
 };
 
 // 绑定门店
-const handleBindStore = async (storeId: string) => {
+const handleBindStore = async (storeId: string, status: number) => {
+  // 如果门店状态为注销，不允许绑定
+  if (status === 3) {
+    message("已注销的门店不能绑定", { type: "warning" });
+    return;
+  }
+
   try {
     const res = await bindStore(storeId);
     if (res.status) {
@@ -336,6 +343,42 @@ const handleSaveCreateStore = async () => {
   }
 };
 
+// 注销门店
+const handleDeactivateStore = async () => {
+  if (!storeInfo.value) return;
+
+  try {
+    await ElMessageBox.confirm(
+      `确定要注销门店 "${storeInfo.value.storeName}" 吗？注销后门店状态将变为注销状态。`,
+      "确认注销",
+      {
+        confirmButtonText: "确定注销",
+        cancelButtonText: "取消",
+        type: "warning",
+        center: true
+      }
+    );
+
+    const res = await deactivateStore(storeInfo.value.id);
+    if (res.status) {
+      message("门店已成功注销", { type: "success" });
+      // 重新获取门店信息（状态会更新为3）
+      await fetchStoreInfo();
+    } else {
+      message(res.message || "注销失败", { type: "error" });
+    }
+  } catch (error: any) {
+    // 用户取消操作
+    if (error === "cancel" || error === "close") {
+      return;
+    }
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "注销失败";
+    message(errorMessage, { type: "error" });
+    console.error("注销门店失败:", error);
+  }
+};
+
 // 处理分页变化
 const handlePageChange = (newPage: number) => {
   pageNum.value = newPage;
@@ -423,6 +466,15 @@ onMounted(() => {
               >
                 修改
               </el-button>
+              <el-button
+                v-if="storeInfo.status !== 3"
+                type="text"
+                size="small"
+                class="ml-2 text-red-500"
+                @click="handleDeactivateStore"
+              >
+                注销
+              </el-button>
             </div>
           </el-descriptions-item>
 
@@ -484,7 +536,6 @@ onMounted(() => {
           style="width: 100%"
           border
         >
-          <el-table-column prop="id" label="门店ID" width="100" />
           <el-table-column prop="storeName" label="门店名称" min-width="150" />
           <el-table-column
             prop="managerPhone"
@@ -512,10 +563,20 @@ onMounted(() => {
           </el-table-column>
           <el-table-column label="操作" width="100" fixed="right">
             <template #default="scope">
+              <el-tooltip
+                v-if="scope.row.status === 3"
+                content="已注销的门店不能绑定"
+                placement="top"
+              >
+                <el-button type="primary" size="small" disabled>
+                  绑定
+                </el-button>
+              </el-tooltip>
               <el-button
+                v-else
                 type="primary"
                 size="small"
-                @click="handleBindStore(scope.row.id)"
+                @click="handleBindStore(scope.row.id, scope.row.status)"
               >
                 绑定
               </el-button>
@@ -639,7 +700,6 @@ onMounted(() => {
           >
             <el-option :label="'营业 (1)'" :value="1" />
             <el-option :label="'休息 (2)'" :value="2" />
-            <el-option :label="'注销 (3)'" :value="3" />
           </el-select>
         </el-form-item>
       </el-form>

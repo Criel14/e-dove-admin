@@ -129,6 +129,12 @@ export type UpdateStoreResponse = {
   message?: string;
 };
 
+/** 注销门店响应 */
+export type DeactivateStoreResponse = {
+  status: boolean;
+  message?: string;
+};
+
 /** 获取当前用户所属门店信息 */
 export const getMyStore = () => {
   // GET "/store/my" 接口，不需要请求参数
@@ -177,4 +183,15 @@ export const createStore = (data: CreateStoreRequest) => {
   return http.request<CreateStoreResponse>("post", "/api/store/create", {
     data
   });
+};
+
+/** 注销门店 */
+export const deactivateStore = (storeId: string) => {
+  return http.request<DeactivateStoreResponse>(
+    "patch",
+    "/api/store/deactivate",
+    {
+      data: { storeId }
+    }
+  );
 };
