@@ -2,14 +2,13 @@
 import { ref, onMounted } from "vue";
 import {
   getShelfPage,
-  updateShelfStatus,
-  deleteShelf,
   createShelf,
+  updateShelf,
   type ShelfVO,
-  type ShelfPageParams
+  type ShelfPageParams,
+  type UpdateShelfRequest
 } from "@/api/shelf";
 import { message } from "@/utils/message";
-import { ElMessageBox } from "element-plus";
 
 defineOptions({
   name: "Shelf"
@@ -36,6 +35,20 @@ const createForm = ref({
   status: 1
 });
 const createLoading = ref(false);
+
+// 编辑货架相关
+const editDialogVisible = ref(false);
+const editForm = ref<UpdateShelfRequest>({
+  id: "",
+  shelfNo: 0,
+  layerCount: 5,
+  maxWidth: 50.0,
+  maxHeight: 50.0,
+  maxLength: 50.0,
+  maxWeight: 50.0,
+  status: 1
+});
+const editLoading = ref(false);
 
 // 状态映射
 const statusMap: Record<number, string> = {
@@ -74,43 +87,6 @@ const fetchShelfList = async () => {
   }
 };
 
-// 更新货架状态
-const handleUpdateStatus = async (id: string, currentStatus: number) => {
-  const newStatus = currentStatus === 1 ? 0 : 1;
-  const statusText = newStatus === 1 ? "启用" : "停用";
-
-  try {
-    await ElMessageBox.confirm(
-      `确定要${statusText}该货架吗？`,
-      `确认${statusText}`,
-      {
-        confirmButtonText: `确定${statusText}`,
-        cancelButtonText: "取消",
-        type: "warning",
-        center: true
-      }
-    );
-
-    const res = await updateShelfStatus({ id, status: newStatus });
-    if (res.status) {
-      message(`货架已${statusText}`, { type: "success" });
-      // 重新获取列表
-      await fetchShelfList();
-    } else {
-      message(res.message || `${statusText}失败`, { type: "error" });
-    }
-  } catch (error: any) {
-    // 用户取消操作
-    if (error === "cancel" || error === "close") {
-      return;
-    }
-    const errorMessage =
-      error?.response?.data?.message || error?.message || `${statusText}失败`;
-    message(errorMessage, { type: "error" });
-    console.error(`${statusText}货架失败:`, error);
-  }
-};
-
 // 处理分页变化
 const handlePageChange = (newPage: number) => {
   pageNum.value = newPage;
@@ -122,40 +98,6 @@ const handleSizeChange = (newSize: number) => {
   pageSize.value = newSize;
   pageNum.value = 1;
   fetchShelfList();
-};
-
-// 删除货架
-const handleDeleteShelf = async (id: string) => {
-  try {
-    await ElMessageBox.confirm(
-      "确定要删除该货架吗？删除后不可恢复。",
-      "确认删除",
-      {
-        confirmButtonText: "确定删除",
-        cancelButtonText: "取消",
-        type: "warning",
-        center: true
-      }
-    );
-
-    const res = await deleteShelf(id);
-    if (res.status) {
-      message("货架删除成功", { type: "success" });
-      // 重新获取列表
-      await fetchShelfList();
-    } else {
-      message(res.message || "删除失败", { type: "error" });
-    }
-  } catch (error: any) {
-    // 用户取消操作
-    if (error === "cancel" || error === "close") {
-      return;
-    }
-    const errorMessage =
-      error?.response?.data?.message || error?.message || "删除失败";
-    message(errorMessage, { type: "error" });
-    console.error("删除货架失败:", error);
-  }
 };
 
 // 打开新增货架对话框
@@ -198,6 +140,48 @@ const handleCreateShelf = async () => {
     console.error("创建货架失败:", error);
   } finally {
     createLoading.value = false;
+  }
+};
+
+// 打开编辑货架对话框
+const handleOpenEditDialog = (row: ShelfVO) => {
+  // 填充表单数据
+  editForm.value = {
+    id: row.id,
+    shelfNo: row.shelfNo,
+    layerCount: row.layerCount,
+    maxWidth: row.maxWidth,
+    maxHeight: row.maxHeight,
+    maxLength: row.maxLength,
+    maxWeight: row.maxWeight,
+    status: row.status
+  };
+  editDialogVisible.value = true;
+};
+
+// 更新货架
+const handleUpdateShelf = async () => {
+  if (!editForm.value) return;
+
+  editLoading.value = true;
+  try {
+    const res = await updateShelf(editForm.value);
+    if (res.status) {
+      message("货架更新成功", { type: "success" });
+      // 关闭对话框
+      editDialogVisible.value = false;
+      // 重新获取列表
+      await fetchShelfList();
+    } else {
+      message(res.message || "更新失败", { type: "error" });
+    }
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "更新失败";
+    message(errorMessage, { type: "error" });
+    console.error("更新货架失败:", error);
+  } finally {
+    editLoading.value = false;
   }
 };
 
@@ -318,7 +302,6 @@ onMounted(() => {
           align="center"
           sortable
         />
-        <el-table-column prop="storeId" label="门店ID" min-width="120" />
         <el-table-column
           prop="layerCount"
           label="总层数"
@@ -366,17 +349,9 @@ onMounted(() => {
               <el-button
                 type="primary"
                 size="small"
-                @click="handleUpdateStatus(row.id, row.status)"
+                @click="handleOpenEditDialog(row)"
               >
-                {{ row.status === 1 ? "停用" : "启用" }}
-              </el-button>
-              <el-button
-                type="danger"
-                size="small"
-                class="ml-2"
-                @click="handleDeleteShelf(row.id)"
-              >
-                删除
+                修改
               </el-button>
             </div>
           </template>
@@ -409,6 +384,14 @@ onMounted(() => {
           label-width="120px"
           :disabled="createLoading"
         >
+          <el-form-item label="货架编号（可选）">
+            <el-input
+              v-model.number="createForm.shelfNo"
+              placeholder="留空则系统自动生成"
+              clearable
+              type="number"
+            />
+          </el-form-item>
           <el-form-item label="货架层数" required>
             <el-input
               v-model.number="createForm.layerCount"
@@ -468,6 +451,98 @@ onMounted(() => {
               @click="handleCreateShelf"
             >
               创建
+            </el-button>
+          </span>
+        </template>
+      </el-dialog>
+
+      <!-- 编辑货架对话框 -->
+      <el-dialog
+        v-model="editDialogVisible"
+        title="修改货架"
+        width="500px"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+      >
+        <el-form :model="editForm" label-width="120px" :disabled="editLoading">
+          <el-form-item label="货架编号" required>
+            <el-input
+              v-model.number="editForm.shelfNo"
+              placeholder="请输入货架编号"
+              clearable
+              type="number"
+            />
+          </el-form-item>
+          <el-form-item label="货架层数" required>
+            <el-input
+              v-model.number="editForm.layerCount"
+              placeholder="请输入货架层数"
+              clearable
+              type="number"
+            />
+          </el-form-item>
+          <el-form-item label="最大宽度(cm)" required>
+            <el-input
+              v-model.number="editForm.maxWidth"
+              placeholder="请输入最大宽度"
+              clearable
+              type="number"
+              step="0.1"
+            />
+          </el-form-item>
+          <el-form-item label="最大高度(cm)" required>
+            <el-input
+              v-model.number="editForm.maxHeight"
+              placeholder="请输入最大高度"
+              clearable
+              type="number"
+              step="0.1"
+            />
+          </el-form-item>
+          <el-form-item label="最大长度(cm)" required>
+            <el-input
+              v-model.number="editForm.maxLength"
+              placeholder="请输入最大长度"
+              clearable
+              type="number"
+              step="0.1"
+            />
+          </el-form-item>
+          <el-form-item label="最大重量(kg)" required>
+            <el-input
+              v-model.number="editForm.maxWeight"
+              placeholder="请输入最大重量"
+              clearable
+              type="number"
+              step="0.1"
+            />
+          </el-form-item>
+          <el-form-item label="状态" required>
+            <el-select
+              v-model.number="editForm.status"
+              placeholder="请选择状态"
+              clearable
+              style="width: 100%"
+            >
+              <el-option label="启用" :value="1" />
+              <el-option label="停用" :value="0" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button
+              :disabled="editLoading"
+              @click="editDialogVisible = false"
+            >
+              取消
+            </el-button>
+            <el-button
+              type="primary"
+              :loading="editLoading"
+              @click="handleUpdateShelf"
+            >
+              更新
             </el-button>
           </span>
         </template>
