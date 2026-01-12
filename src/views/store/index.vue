@@ -435,14 +435,14 @@ onMounted(() => {
         </template>
 
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="门店ID">
+          <el-descriptions-item label="门店编号">
             {{ storeInfo.id }}
           </el-descriptions-item>
           <el-descriptions-item label="门店名称">
             {{ storeInfo.storeName }}
           </el-descriptions-item>
 
-          <el-descriptions-item label="管理员手机号">
+          <el-descriptions-item label="联系电话">
             {{ storeInfo.managerPhone }}
           </el-descriptions-item>
           <el-descriptions-item label="门店状态">

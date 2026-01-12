@@ -11,7 +11,7 @@ const TITLE = getConfig("Title");
     Copyright © 2020-present
     <a
       class="hover:text-primary!"
-      href="https://github.com/pure-admin"
+      href="https://github.com/Criel14/e-dove-admin"
       target="_blank"
     >
       &nbsp;{{ TITLE }}
