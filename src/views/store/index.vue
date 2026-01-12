@@ -530,59 +530,69 @@ onMounted(() => {
         </div>
 
         <!-- 门店列表表格 -->
-        <el-table
-          v-loading="listLoading"
-          :data="storeList"
-          style="width: 100%"
-          border
-        >
-          <el-table-column prop="storeName" label="门店名称" min-width="150" />
-          <el-table-column
-            prop="managerPhone"
-            label="管理员手机号"
-            width="130"
-          />
-          <el-table-column prop="addrProvince" label="省份" width="100" />
-          <el-table-column prop="addrCity" label="城市" width="100" />
-          <el-table-column prop="addrDistrict" label="区县" width="100" />
-          <el-table-column prop="addrDetail" label="详细地址" min-width="200" />
-          <el-table-column prop="status" label="状态" width="100">
-            <template #default="scope">
-              <el-tag
-                :type="
-                  scope.row.status === 1
-                    ? 'success'
-                    : scope.row.status === 2
-                      ? 'warning'
-                      : 'danger'
-                "
-              >
-                {{ statusMap[scope.row.status] || "未知" }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
-            <template #default="scope">
-              <el-tooltip
-                v-if="scope.row.status === 3"
-                content="已注销的门店不能绑定"
-                placement="top"
-              >
-                <el-button type="primary" size="small" disabled>
+        <div class="table-container">
+          <el-table
+            v-loading="listLoading"
+            :data="storeList"
+            style="width: 100%"
+            border
+          >
+            <el-table-column
+              prop="storeName"
+              label="门店名称"
+              min-width="150"
+            />
+            <el-table-column
+              prop="managerPhone"
+              label="管理员手机号"
+              width="120"
+            />
+            <el-table-column prop="addrProvince" label="省份" width="100" />
+            <el-table-column prop="addrCity" label="城市" width="100" />
+            <el-table-column prop="addrDistrict" label="区县" width="100" />
+            <el-table-column
+              prop="addrDetail"
+              label="详细地址"
+              min-width="180"
+            />
+            <el-table-column prop="status" label="状态" width="100">
+              <template #default="scope">
+                <el-tag
+                  :type="
+                    scope.row.status === 1
+                      ? 'success'
+                      : scope.row.status === 2
+                        ? 'warning'
+                        : 'danger'
+                  "
+                >
+                  {{ statusMap[scope.row.status] || "未知" }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="100" fixed="right">
+              <template #default="scope">
+                <el-tooltip
+                  v-if="scope.row.status === 3"
+                  content="已注销的门店不能绑定"
+                  placement="top"
+                >
+                  <el-button type="primary" size="small" disabled>
+                    绑定
+                  </el-button>
+                </el-tooltip>
+                <el-button
+                  v-else
+                  type="primary"
+                  size="small"
+                  @click="handleBindStore(scope.row.id, scope.row.status)"
+                >
                   绑定
                 </el-button>
-              </el-tooltip>
-              <el-button
-                v-else
-                type="primary"
-                size="small"
-                @click="handleBindStore(scope.row.id, scope.row.status)"
-              >
-                绑定
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
 
         <!-- 分页控件 -->
         <div class="pagination-container mt-4">
@@ -810,7 +820,7 @@ onMounted(() => {
 }
 
 .store-info-card {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -828,5 +838,9 @@ onMounted(() => {
 .card-title {
   font-size: 18px;
   font-weight: 600;
+}
+
+.table-container {
+  overflow-x: auto;
 }
 </style>
