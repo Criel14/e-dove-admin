@@ -122,3 +122,22 @@ export const register = (data?: {
   // 响应数据与登录接口相同（注册成功后自动登录）
   return http.request<SignInResponse>("post", "/api/auth/register", { data });
 };
+
+/** 用户信息响应 */
+export type UserInfoResponse = {
+  status: boolean;
+  data: {
+    userId: string;
+    storeId: string;
+    username: string;
+    phone: string;
+    email: string;
+    avatarUrl: string;
+  };
+  message?: string;
+};
+
+/** 获取用户信息 */
+export const getUserInfo = () => {
+  return http.request<UserInfoResponse>("get", "/api/user/info");
+};

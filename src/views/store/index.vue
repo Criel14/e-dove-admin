@@ -418,7 +418,7 @@ onMounted(() => {
       <el-card class="box-card">
         <template #header>
           <div class="card-header">
-            <span class="card-title">门店信息</span>
+            <span class="card-title">所属门店信息</span>
             <div class="card-actions">
               <el-button
                 type="primary"
