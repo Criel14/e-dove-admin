@@ -592,24 +592,35 @@ onMounted(() => {
 
 .dimension-info {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: 8px;
 }
 
 .dimension-item {
   display: flex;
   align-items: center;
+  min-width: 80px;
+  padding: 4px 8px;
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.dimension-item:hover {
+  background-color: #e4e7ed;
 }
 
 .dimension-label {
-  width: 30px;
+  margin-right: 4px;
   font-size: 12px;
+  font-weight: 500;
   color: #909399;
 }
 
 .dimension-value {
   font-size: 12px;
-  color: #606266;
+  font-weight: 600;
+  color: #303133;
 }
 
 .action-buttons {
