@@ -8,7 +8,7 @@ export default {
   meta: {
     icon: "lets-icons:package-box-close",
     title: "包裹管理",
-    rank: 0
+    rank: 3
   },
   children: [
     {

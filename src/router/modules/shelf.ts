@@ -8,7 +8,7 @@ export default {
   meta: {
     icon: "lsicon:shelf-outline",
     title: "货架管理",
-    rank: 0
+    rank: 2
   },
   children: [
     {

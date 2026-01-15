@@ -8,7 +8,7 @@ export default {
   meta: {
     icon: "ic:outline-store",
     title: "门店管理",
-    rank: 0
+    rank: 1
   },
   children: [
     {
