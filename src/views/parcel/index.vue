@@ -20,7 +20,7 @@ const parcelList = ref<ParcelInfo[]>([]);
 const total = ref(0);
 // 分页参数
 const pageNum = ref(1);
-const pageSize = ref(20);
+const pageSize = ref(10);
 // 搜索参数
 const searchParams = ref<ParcelPageRequest>({
   pageNum: 1,
