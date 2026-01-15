@@ -104,7 +104,7 @@ const handleGenerate = async () => {
           <el-input-number
             v-model="form.count"
             :min="1"
-            :max="1000"
+            :max="30"
             placeholder="请输入包裹数量"
             controls-position="right"
             class="w-full"
@@ -113,7 +113,7 @@ const handleGenerate = async () => {
         </el-form-item>
 
         <el-alert
-          title="仅会生成到达本门店的包裹"
+          title="仅会生成到达本门店的包裹（数量无法超过30，否则调用LLM时间过长，容易timeout）"
           type="info"
           :closable="false"
           show-icon
