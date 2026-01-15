@@ -31,9 +31,9 @@ const statusMap: Record<
   number,
   { label: string; type: "info" | "success" | "warning" | "danger" | "primary" }
 > = {
-  0: { label: "未入库", type: "info" },
-  1: { label: "已入库", type: "success" },
-  2: { label: "已取出", type: "warning" },
+  0: { label: "未入库", type: "primary" },
+  1: { label: "已入库", type: "warning" },
+  2: { label: "已取出", type: "success" },
   3: { label: "滞留", type: "danger" },
   4: { label: "退回", type: "danger" }
 };
@@ -88,9 +88,23 @@ const handleSizeChange = (newSize: number) => {
   fetchParcelList();
 };
 
-// 格式化日期时间
-const formatDateTime = (dateTime: string | null) => {
-  if (!dateTime) return "未入库/未出库";
+// 格式化入库时间
+const formatInTime = (dateTime: string | null) => {
+  if (!dateTime) return "(未入库)";
+  const date = new Date(dateTime);
+  return date.toLocaleString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+};
+
+// 格式化出库时间
+const formatOutTime = (dateTime: string | null) => {
+  if (!dateTime) return "(未出库)";
   const date = new Date(dateTime);
   return date.toLocaleString("zh-CN", {
     year: "numeric",
@@ -233,7 +247,7 @@ const showDetail = (parcel: ParcelInfo) => {
           <el-table-column
             prop="trackingNumber"
             label="运单号"
-            min-width="150"
+            min-width="120"
             fixed="left"
           />
           <el-table-column
@@ -253,12 +267,22 @@ const showDetail = (parcel: ParcelInfo) => {
           </el-table-column>
           <el-table-column prop="inTime" label="入库时间" width="180">
             <template #default="scope">
-              {{ formatDateTime(scope.row.inTime) }}
+              <div v-if="!scope.row.inTime">
+                <el-tag size="small" plain type="info"> (未入库) </el-tag>
+              </div>
+              <div v-else>
+                {{ formatInTime(scope.row.inTime) }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column prop="outTime" label="出库时间" width="180">
             <template #default="scope">
-              {{ formatDateTime(scope.row.outTime) }}
+              <div v-if="!scope.row.outTime">
+                <el-tag size="small" plain type="info">(未出库)</el-tag>
+              </div>
+              <div v-else>
+                {{ formatOutTime(scope.row.outTime) }}
+              </div>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="80" fixed="right">
@@ -326,7 +350,12 @@ const showDetail = (parcel: ParcelInfo) => {
               }}
             </el-descriptions-item>
             <el-descriptions-item label="取件码">
-              {{ currentParcel.pickCode }}
+              <div v-if="!currentParcel.pickCode">
+                <el-tag size="small" plain type="info">(未入库)</el-tag>
+              </div>
+              <div v-else>
+                {{ currentParcel.pickCode }}
+              </div>
             </el-descriptions-item>
 
             <el-descriptions-item label="门店ID">
@@ -341,11 +370,21 @@ const showDetail = (parcel: ParcelInfo) => {
               {{ currentParcel.weight }}kg
             </el-descriptions-item>
             <el-descriptions-item label="入库时间">
-              {{ formatDateTime(currentParcel.inTime) }}
+              <div v-if="!currentParcel.inTime">
+                <el-tag size="small" plain type="info">(未入库)</el-tag>
+              </div>
+              <div v-else>
+                {{ formatInTime(currentParcel.inTime) }}
+              </div>
             </el-descriptions-item>
 
             <el-descriptions-item label="出库时间">
-              {{ formatDateTime(currentParcel.outTime) }}
+              <div v-if="!currentParcel.outTime">
+                <el-tag size="small" plain type="info">(未出库)</el-tag>
+              </div>
+              <div v-else>
+                {{ formatOutTime(currentParcel.outTime) }}
+              </div>
             </el-descriptions-item>
           </el-descriptions>
         </div>

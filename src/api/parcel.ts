@@ -64,3 +64,21 @@ export const getParcelPage = (params: ParcelPageRequest) => {
     params
   });
 };
+
+/** 生成包裹请求参数 */
+export type GenerateParcelRequest = {
+  count: number;
+};
+
+/** 生成包裹响应 */
+export type GenerateParcelResponse = {
+  status: boolean;
+  message?: string;
+};
+
+/** 生成包裹 */
+export const generateParcels = (data: GenerateParcelRequest) => {
+  return http.request<GenerateParcelResponse>("post", "/api/parcel/generate", {
+    params: data
+  });
+};
