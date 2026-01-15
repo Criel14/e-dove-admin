@@ -64,21 +64,30 @@ const handleGenerate = async () => {
       <template #header>
         <div class="card-header">
           <span class="card-title">数据生成</span>
-          <div class="card-actions">
-            <el-button type="primary" @click="handleOpenDialog">
-              生成包裹
-            </el-button>
-          </div>
         </div>
       </template>
 
       <div class="content">
-        <p class="text-gray-600 mb-4">
-          此页面用于生成模拟数据，便于开发和测试。
+        <p class="text-gray-400 mb-20">
+          此页面用于生成模拟数据，便于开发和测试。选择以下操作批量生成测试数据：
         </p>
-        <p class="text-gray-600">
-          点击"生成包裹"按钮可以批量生成到达本门店的包裹数据。
-        </p>
+
+        <!-- 数据生成操作列表 -->
+        <div class="actions-grid">
+          <div class="action-item">
+            <div class="action-content">
+              <h3 class="action-title">包裹数据生成</h3>
+              <p class="action-description">
+                批量生成到达本门店的包裹数据，包括运单号、收件人信息、包裹尺寸等
+              </p>
+            </div>
+            <div class="action-button">
+              <el-button type="primary" @click="handleOpenDialog">
+                生成包裹
+              </el-button>
+            </div>
+          </div>
+        </div>
       </div>
     </el-card>
 
@@ -137,17 +146,65 @@ const handleGenerate = async () => {
   justify-content: space-between;
 }
 
-.card-actions {
-  display: flex;
-  gap: 10px;
-}
-
 .card-title {
   font-size: 18px;
   font-weight: 600;
 }
 
 .content {
-  padding: 20px 0;
+  padding: 0;
+}
+
+.actions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+  margin-top: 20px;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.action-item:hover:not(.disabled) {
+  border-color: #409eff;
+  box-shadow: 0 2px 12px 0 rgb(64 158 255 / 10%);
+}
+
+.action-item.disabled {
+  cursor: not-allowed;
+  background-color: #f5f7fa;
+  opacity: 0.6;
+}
+
+.action-content {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.action-title {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.action-description {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #606266;
+}
+
+.action-button {
+  flex-shrink: 0;
 }
 </style>
