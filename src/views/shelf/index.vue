@@ -268,14 +268,14 @@ onMounted(() => {
                     <div class="usage-container">
                       <el-progress
                         :percentage="
-                          layer.maxCapacity > 0
+                          layer.currentCount > 0
                             ? Math.round(
-                                (layer.todayMaxSeq / layer.maxCapacity) * 100
+                                (layer.currentCount / layer.maxCapacity) * 100
                               )
                             : 0
                         "
                         :status="
-                          layer.todayMaxSeq >= layer.maxCapacity
+                          layer.currentCount >= layer.maxCapacity
                             ? 'exception'
                             : 'success'
                         "
@@ -284,7 +284,7 @@ onMounted(() => {
                         class="usage-progress"
                       />
                       <span class="usage-text">
-                        {{ layer.todayMaxSeq }}/{{ layer.maxCapacity }}
+                        {{ layer.currentCount }}/{{ layer.maxCapacity }}
                       </span>
                     </div>
                   </template>
