@@ -1,5 +1,5 @@
-**毕设：快递驿站系统（前端管理端部分）**
+# 简介
 
-# 基本思路
+管理端基于 [vue-pure-admin精简版](https://github.com/pure-admin/pure-admin-thin) 开发，项目具体内容请查看[后端部分](https://github.com/Criel14/e-dove-service)
 
-基于 [vue-pure-admin](https://github.com/pure-admin/vue-pure-admin)精简版开发(基本vibe coding)
+> 不会写前端，但有Claude Code神力💪
