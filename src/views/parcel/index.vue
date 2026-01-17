@@ -2,10 +2,13 @@
 import { ref, onMounted } from "vue";
 import {
   getParcelPage,
+  parcelIn,
+  parcelOut,
   type ParcelInfo,
   type ParcelPageRequest
 } from "@/api/parcel";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 import Search from "~icons/ep/search";
 
 defineOptions({
@@ -92,28 +95,24 @@ const handleSizeChange = (newSize: number) => {
 const formatInTime = (dateTime: string | null) => {
   if (!dateTime) return "(未入库)";
   const date = new Date(dateTime);
-  return date.toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  });
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
 // 格式化出库时间
 const formatOutTime = (dateTime: string | null) => {
   if (!dateTime) return "(未出库)";
   const date = new Date(dateTime);
-  return date.toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  });
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 };
 
 // 页面加载时获取数据
@@ -129,6 +128,78 @@ const currentParcel = ref<ParcelInfo | null>(null);
 const showDetail = (parcel: ParcelInfo) => {
   currentParcel.value = parcel;
   detailDialogVisible.value = true;
+};
+
+// 包裹入库
+const handleParcelIn = async (parcel: ParcelInfo) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要将运单号为 "${parcel.trackingNumber}" 的包裹入库吗？`,
+      "确认入库",
+      {
+        confirmButtonText: "确定入库",
+        cancelButtonText: "取消",
+        type: "warning",
+        center: true
+      }
+    );
+
+    const res = await parcelIn({ trackingNumber: parcel.trackingNumber });
+    if (res.status) {
+      message("包裹入库成功", { type: "success" });
+      // 重新获取包裹列表
+      await fetchParcelList();
+    } else {
+      message(res.message || "入库失败", { type: "error" });
+    }
+  } catch (error: any) {
+    // 用户取消操作
+    if (error === "cancel" || error === "close") {
+      return;
+    }
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "入库失败";
+    message(errorMessage, { type: "error" });
+    console.error("包裹入库失败:", error);
+  }
+};
+
+// 包裹出库
+const handleParcelOut = async (parcel: ParcelInfo) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要将运单号为 "${parcel.trackingNumber}" 的包裹出库吗？<br/>收件人手机号：${parcel.recipientPhone}`,
+      "确认出库",
+      {
+        confirmButtonText: "确定出库",
+        cancelButtonText: "取消",
+        type: "warning",
+        center: true,
+        dangerouslyUseHTMLString: true
+      }
+    );
+
+    const res = await parcelOut({
+      trackingNumber: parcel.trackingNumber,
+      recipientPhone: parcel.recipientPhone
+    });
+    if (res.status) {
+      message("包裹出库成功", { type: "success" });
+      // 重新获取包裹列表
+      await fetchParcelList();
+    } else {
+      message(res.message || "出库失败", { type: "error" });
+    }
+  } catch (error: any) {
+    // 用户取消操作
+    if (error === "cancel" || error === "close") {
+      return;
+    }
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "出库失败";
+    message(errorMessage, { type: "error" });
+    console.error("包裹出库失败:", error);
+  }
 };
 </script>
 
@@ -147,7 +218,7 @@ const showDetail = (parcel: ParcelInfo) => {
       </template>
 
       <!-- 搜索区域 -->
-      <div class="search-container mb-6">
+      <div class="search-container mb-1">
         <el-form :model="searchParams" label-width="100px">
           <el-row :gutter="20">
             <el-col :span="8">
@@ -247,13 +318,14 @@ const showDetail = (parcel: ParcelInfo) => {
           <el-table-column
             prop="trackingNumber"
             label="运单号"
-            min-width="120"
+            width="150"
             fixed="left"
           />
           <el-table-column
             prop="recipientPhone"
             label="收件人手机号"
             width="130"
+            fixed="left"
           />
           <el-table-column prop="status" label="包裹状态" width="120">
             <template #default="scope">
@@ -265,7 +337,7 @@ const showDetail = (parcel: ParcelInfo) => {
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="inTime" label="入库时间" width="180">
+          <el-table-column prop="inTime" label="入库时间">
             <template #default="scope">
               <div v-if="!scope.row.inTime">
                 <el-tag size="small" plain type="info"> (未入库) </el-tag>
@@ -275,7 +347,7 @@ const showDetail = (parcel: ParcelInfo) => {
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="outTime" label="出库时间" width="180">
+          <el-table-column prop="outTime" label="出库时间">
             <template #default="scope">
               <div v-if="!scope.row.outTime">
                 <el-tag size="small" plain type="info">(未出库)</el-tag>
@@ -285,15 +357,39 @@ const showDetail = (parcel: ParcelInfo) => {
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="80" fixed="right">
+          <el-table-column label="查看" width="70" fixed="right">
             <template #default="scope">
-              <el-button
-                type="primary"
-                size="small"
-                @click="showDetail(scope.row)"
-              >
-                详细
-              </el-button>
+              <div class="detail-button-container">
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="showDetail(scope.row)"
+                >
+                  详细
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="160" fixed="right">
+            <template #default="scope">
+              <div class="operation-buttons">
+                <el-button
+                  type="success"
+                  size="small"
+                  :disabled="scope.row.status === 1 || scope.row.status === 2"
+                  @click="handleParcelIn(scope.row)"
+                >
+                  入库
+                </el-button>
+                <el-button
+                  type="warning"
+                  size="small"
+                  :disabled="scope.row.status === 2"
+                  @click="handleParcelOut(scope.row)"
+                >
+                  出库
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -429,5 +525,18 @@ const showDetail = (parcel: ParcelInfo) => {
 
 .table-container {
   overflow-x: auto;
+}
+
+.operation-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.detail-button-container {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
 }
 </style>

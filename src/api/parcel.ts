@@ -82,3 +82,40 @@ export const generateParcels = (data: GenerateParcelRequest) => {
     params: data
   });
 };
+
+/** 包裹入库请求参数 */
+export type ParcelInRequest = {
+  trackingNumber: string;
+};
+
+/** 包裹入库响应 */
+export type ParcelInResponse = {
+  status: boolean;
+  message?: string;
+};
+
+/** 包裹入库 */
+export const parcelIn = (data: ParcelInRequest) => {
+  return http.request<ParcelInResponse>("post", "/api/parcel/in", {
+    data
+  });
+};
+
+/** 包裹出库请求参数 */
+export type ParcelOutRequest = {
+  trackingNumber: string;
+  recipientPhone: string;
+};
+
+/** 包裹出库响应 */
+export type ParcelOutResponse = {
+  status: boolean;
+  message?: string;
+};
+
+/** 包裹出库 */
+export const parcelOut = (data: ParcelOutRequest) => {
+  return http.request<ParcelOutResponse>("post", "/api/parcel/out", {
+    data
+  });
+};
