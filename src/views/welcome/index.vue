@@ -237,7 +237,8 @@ onMounted(() => {
 
 .user-avatar {
   margin-bottom: 20px;
-  border: 3px solid #f0f7ff;
+  background-color: #fff;
+  border: 3px solid #fff;
 }
 
 .user-details {

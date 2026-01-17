@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
 import { useNav } from "@/layout/hooks/useNav";
+import { getUserInfo } from "@/api/user";
+import { useUserStoreHook } from "@/store/modules/user";
+import { message } from "@/utils/message";
 import LaySearch from "../lay-search/index.vue";
 import LayNotice from "../lay-notice/index.vue";
 import LayNavMix from "../lay-sidebar/NavMix.vue";
@@ -21,6 +25,37 @@ const {
   avatarsStyle,
   toggleSideBar
 } = useNav();
+
+const userStore = useUserStoreHook();
+
+// 获取用户信息
+const fetchUserInfo = async () => {
+  try {
+    const res = await getUserInfo();
+    if (res.status) {
+      // 更新store中的用户信息
+      const { avatarUrl, username: fetchedUsername } = res.data;
+      // 更新头像，即使为空也更新（使用默认头像）
+      userStore.SET_AVATAR(avatarUrl || "");
+      // 更新用户名
+      if (fetchedUsername) {
+        userStore.SET_USERNAME(fetchedUsername);
+      }
+    } else {
+      message(res.message || "获取用户信息失败", { type: "error" });
+    }
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message || error?.message || "获取用户信息失败";
+    message(errorMessage, { type: "error" });
+    console.error("获取用户信息失败:", error);
+  }
+};
+
+// 页面加载时获取用户信息
+onMounted(() => {
+  fetchUserInfo();
+});
 </script>
 
 <template>
