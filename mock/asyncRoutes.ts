@@ -11,7 +11,7 @@ const permissionRouter = {
   meta: {
     title: "权限管理（暂无）",
     icon: "ep:lollipop",
-    rank: 10
+    rank: 100
   },
   children: [
     {
@@ -19,14 +19,16 @@ const permissionRouter = {
       name: "PermissionPage",
       meta: {
         title: "页面权限",
-        roles: ["admin", "common"]
+        roles: ["admin"],
+        showLink: false // 暂不展示
       }
     },
     {
       path: "/permission/button",
       meta: {
         title: "按钮权限",
-        roles: ["admin", "common"]
+        roles: ["admin", "common"],
+        showLink: false // 暂不展示
       },
       children: [
         {
