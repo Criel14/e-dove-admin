@@ -617,30 +617,43 @@ onMounted(() => {
       :close-on-click-modal="false"
       :close-on-press-escape="false"
     >
-      <el-form :model="editForm" label-width="120px" :disabled="editLoading">
-        <el-form-item label="门店名称" required>
-          <el-input
-            v-model="editForm.storeName"
-            placeholder="请输入门店名称"
-            clearable
-          />
-        </el-form-item>
-
-        <el-form-item label="管理员手机号" required>
-          <el-input
-            v-model="editForm.managerPhone"
-            placeholder="请输入管理员手机号"
-            clearable
-          />
-        </el-form-item>
-
+      <el-form
+        :model="editForm"
+        label-width="90px"
+        :disabled="editLoading"
+        class="store-edit-form"
+      >
         <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="门店名称" required>
+              <el-input
+                v-model="editForm.storeName"
+                placeholder="请输入门店名称"
+                clearable
+                class="w-full"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="管理员手机号" required>
+              <el-input
+                v-model="editForm.managerPhone"
+                placeholder="请输入管理员手机号"
+                clearable
+                class="w-full"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20" class="address-row">
           <el-col :span="8">
             <el-form-item label="省份" required>
               <el-input
                 v-model="editForm.addrProvince"
                 placeholder="请输入省份"
                 clearable
+                class="w-full"
               />
             </el-form-item>
           </el-col>
@@ -650,6 +663,7 @@ onMounted(() => {
                 v-model="editForm.addrCity"
                 placeholder="请输入城市"
                 clearable
+                class="w-full"
               />
             </el-form-item>
           </el-col>
@@ -659,6 +673,7 @@ onMounted(() => {
                 v-model="editForm.addrDistrict"
                 placeholder="请输入区县"
                 clearable
+                class="w-full"
               />
             </el-form-item>
           </el-col>
@@ -669,6 +684,7 @@ onMounted(() => {
             v-model="editForm.addrDetail"
             placeholder="请输入详细地址"
             clearable
+            class="w-full"
           />
         </el-form-item>
       </el-form>
@@ -743,24 +759,27 @@ onMounted(() => {
     >
       <el-form
         :model="createForm"
-        label-width="120px"
+        label-width="90px"
         :disabled="createLoading"
+        class="store-create-form"
       >
         <el-form-item label="门店名称" required>
           <el-input
             v-model="createForm.storeName"
             placeholder="请输入门店名称"
             clearable
+            class="w-full"
           />
         </el-form-item>
 
-        <el-row :gutter="20">
+        <el-row :gutter="20" class="address-row">
           <el-col :span="8">
             <el-form-item label="省份" required>
               <el-input
                 v-model="createForm.addrProvince"
                 placeholder="请输入省份"
                 clearable
+                class="w-full"
               />
             </el-form-item>
           </el-col>
@@ -770,6 +789,7 @@ onMounted(() => {
                 v-model="createForm.addrCity"
                 placeholder="请输入城市"
                 clearable
+                class="w-full"
               />
             </el-form-item>
           </el-col>
@@ -779,6 +799,7 @@ onMounted(() => {
                 v-model="createForm.addrDistrict"
                 placeholder="请输入区县"
                 clearable
+                class="w-full"
               />
             </el-form-item>
           </el-col>
@@ -789,6 +810,7 @@ onMounted(() => {
             v-model="createForm.addrDetail"
             placeholder="请输入详细地址"
             clearable
+            class="w-full"
           />
         </el-form-item>
       </el-form>
@@ -842,5 +864,13 @@ onMounted(() => {
 
 .table-container {
   overflow-x: auto;
+}
+
+.store-container :deep(.el-form-item__label) {
+  white-space: nowrap;
+}
+
+.store-container :deep(.el-dialog .el-input) {
+  width: 100%;
 }
 </style>
