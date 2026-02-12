@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm lint:prettier:*)",
+      "Bash(pnpm lint:eslint:*)",
+      "Bash(pnpm vue-tsc:*)",
+      "Bash(pnpm eslint:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(pnpm prettier:*)",
+      "Bash(dir:*)",
+      "Bash(npx --no-install commitlint:*)",
+      "Bash(find:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npm run typecheck)",
+      "Bash(timeout:*)",
+      "Bash(findstr:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(pnpm run typecheck:*)"
+    ]
+  }
+}

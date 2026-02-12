@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import {
   getParcelPage,
   parcelIn,
@@ -10,6 +10,7 @@ import {
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import Search from "~icons/ep/search";
+import JsBarcode from "jsbarcode";
 
 defineOptions({
   name: "Parcel"
@@ -123,11 +124,28 @@ onMounted(() => {
 // 详细信息弹窗相关
 const detailDialogVisible = ref(false);
 const currentParcel = ref<ParcelInfo | null>(null);
+const barcodeSvgRef = ref<SVGSVGElement | null>(null);
+const barcodePopoverVisible = ref(false);
 
 // 显示包裹详细信息
 const showDetail = (parcel: ParcelInfo) => {
   currentParcel.value = parcel;
   detailDialogVisible.value = true;
+};
+
+const handleShowBarcode = async () => {
+  if (!currentParcel.value?.trackingNumber) return;
+  barcodePopoverVisible.value = true;
+  await nextTick();
+  if (barcodeSvgRef.value) {
+    JsBarcode(barcodeSvgRef.value, currentParcel.value.trackingNumber, {
+      format: "CODE128",
+      displayValue: true,
+      fontSize: 14,
+      height: 60,
+      margin: 10
+    });
+  }
 };
 
 // 包裹入库
@@ -422,7 +440,31 @@ const handleParcelOut = async (parcel: ParcelInfo) => {
               {{ currentParcel.id }}
             </el-descriptions-item>
             <el-descriptions-item label="运单号">
-              {{ currentParcel.trackingNumber }}
+              <div class="tracking-number-row">
+                <span>{{ currentParcel.trackingNumber }}</span>
+                <el-popover
+                  v-model:visible="barcodePopoverVisible"
+                  placement="right"
+                  width="360"
+                  trigger="click"
+                  popper-class="barcode-popper"
+                  @show="handleShowBarcode"
+                >
+                  <div class="barcode-container">
+                    <svg ref="barcodeSvgRef" />
+                  </div>
+                  <template #reference>
+                    <el-button
+                      size="small"
+                      type="primary"
+                      text
+                      class="barcode-btn"
+                    >
+                      条形码
+                    </el-button>
+                  </template>
+                </el-popover>
+              </div>
             </el-descriptions-item>
 
             <el-descriptions-item label="收件人手机号">
@@ -525,6 +567,37 @@ const handleParcelOut = async (parcel: ParcelInfo) => {
 
 .table-container {
   overflow-x: auto;
+}
+
+.tracking-number-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.barcode-btn.el-button.is-text {
+  padding: 4px 8px;
+  background: rgb(64 158 255 / 12%);
+  border-radius: 6px;
+}
+
+.barcode-btn.el-button.is-text:hover {
+  background: rgb(64 158 255 / 20%);
+}
+
+.barcode-container {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #eef1f6;
+  border-radius: 8px;
+}
+
+.parcel-container :deep(.barcode-popper) {
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 12%);
 }
 
 .operation-buttons {
