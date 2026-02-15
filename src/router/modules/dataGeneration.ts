@@ -9,7 +9,7 @@ export default {
   meta: {
     icon: "material-symbols:data-table-outline-rounded",
     title: "数据生成",
-    rank: 100
+    rank: 4
   },
   children: [
     {

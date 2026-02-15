@@ -119,3 +119,22 @@ export const parcelOut = (data: ParcelOutRequest) => {
     data
   });
 };
+
+export type MachineParcelOutRequest = {
+  identityCode: string;
+  trackingNumber: string;
+};
+
+export type MachineParcelOutResponse = {
+  status: boolean;
+  data: {
+    remaining: number;
+  };
+  message?: string;
+};
+
+export const machineParcelOut = (data: MachineParcelOutRequest) => {
+  return http.request<MachineParcelOutResponse>("post", "/api/parcel/out", {
+    data
+  });
+};
